@@ -21,17 +21,21 @@ int main()
     
 	xmss_params smt_params;
 	smt_params_initialization(&smt_params); //initialize SMT params
+
+	uint64_t    request_number[MAX_GROUP_MEMBER];
+	uint32_t	last_member;
+	uint8_t		member_status[MAX_GROUP_MEMBER];
     
     unsigned char   pub_seed_imt[imt_params.n];
     unsigned char   manager_key[32];
     unsigned char   imt_seed[imt_params.n];
-	unsigned char   imt_root[imt_node_len];
+    unsigned char   imt_root[imt_node_len];
     unsigned char   smtU_seed[3 * smt_params.n];
     unsigned char   smtL_seed[3 * smt_params.n];
     unsigned char   select_imt_node_seed[smt_params.n];
     unsigned char   allocate_seed[smt_params.n];
     uint32_t        addr[8] = {0};
-	imt_node	    *imt_head=NULL;
+    imt_node	    *imt_head=NULL;
     
     uint32_t        id;
     uint32_t	    isRequest;
@@ -41,7 +45,7 @@ int main()
     
     printf("\nStarting Setup...\n");
 
-    dgmt_setup();
+    dgmt_setup(request_number, &last_member, member_status);
     
     //Creation of the IMT Tree
 	randombytes(imt_seed, imt_params.n);                                        //randomly choose IMT Seed
@@ -62,7 +66,7 @@ int main()
     printf("DGMT Setup Complete.\n");
     
     for(id = 0; id<INITIAL_GROUP_MEMBER; id++){
-       key_distribute(&smt_params, imt_head, smtU_seed, smtL_seed, select_imt_node_seed, allocate_seed, pub_seed_imt,manager_key, id);
+       key_distribute(&smt_params, imt_head, smtU_seed, smtL_seed, select_imt_node_seed, allocate_seed, pub_seed_imt,manager_key, id,request_number);
     }
     printf("Key distribution to initial group members is done\n");
     
@@ -85,7 +89,7 @@ int main()
         if(member_status[id] == 0){
             printf("\t\tInactive member\n");
         } else if(member_status[id] == 1){    
-        	key_distribute(&smt_params, imt_head, smtU_seed, smtL_seed, select_imt_node_seed, allocate_seed, pub_seed_imt,manager_key, isRequest-1);
+        	key_distribute(&smt_params, imt_head, smtU_seed, smtL_seed, select_imt_node_seed, allocate_seed, pub_seed_imt,manager_key, isRequest-1,request_number);
         }else if (member_status[id] == 2){
         	printf("\t\tRevoked member\n");
         }
@@ -93,13 +97,13 @@ int main()
     
     printf("\tUser's id after open = %u\n",open_dgmt(&smt_params, sm, manager_key));
     
-    revocation(2, manager_key);
+    revocation(2, manager_key, member_status);
     printf("\tVerified after revocation of user 2 = %u\n",verify_dgmtU(&imt_params, &smt_params, sm, imt_root));
     
-    revocation(1, manager_key);
+    revocation(1, manager_key, member_status);
     printf("\tVerified after revocation of user 1 = %u\n",verify_dgmtU(&imt_params, &smt_params, sm, imt_root));
     
-    id = join(&smt_params, imt_head, smtU_seed, smtL_seed, select_imt_node_seed, allocate_seed, pub_seed_imt,manager_key);
+    id = join(&smt_params, imt_head, smtU_seed, smtL_seed, select_imt_node_seed, allocate_seed, pub_seed_imt,manager_key, member_status, &last_member, request_number);
     printf("\tNew member joined with id = %u\n",id);
     
     return 0;

@@ -44,12 +44,10 @@
 #define DIR_FALLBACK    "./dgmt/fallback/"
 
 //uint32_t    smt_instance[internal_imt_nodes];
-uint64_t    request_number[MAX_GROUP_MEMBER];
-uint32_t	last_member;
-uint8_t		member_status[MAX_GROUP_MEMBER];
 
 
-void dgmt_setup();
+
+void dgmt_setup(uint64_t  *request_number, uint32_t	*last_member, uint8_t	*member_status);
 
 void create_allocation_list(const xmss_params *params, uint32_t lp[],
                             uint32_t i0, uint32_t i1, uint32_t j,
@@ -66,7 +64,7 @@ void create_smtd(const xmss_params *params, const unsigned char *inseedL, const 
                             
 void key_distribute(const xmss_params *params, imt_node *head, const unsigned char *inseedU, 
             const unsigned char *inseedL, const unsigned char   *select_imt_node_seed, const unsigned char   *alloc_seed,
-            unsigned char *pub_seed_imt, unsigned char *manager_key, uint32_t   id);
+            unsigned char *pub_seed_imt, unsigned char *manager_key, uint32_t   id, uint64_t    *request_number);
             
 void sign_dgmtM(const xmss_params *params, imt_node *head, 
                      unsigned char *pub_seed_imt, uint32_t   id, uint64_t i0, uint64_t i1,
@@ -83,13 +81,13 @@ void create_smt_filename(char filename[], uint32_t i0,
                      
 uint32_t open_dgmt(const xmss_params *params, const unsigned char *sm, unsigned char *manager_key);
 
-void revocation(uint32_t id, unsigned char *manager_key);
+void revocation(uint32_t id, unsigned char *manager_key, uint8_t *member_status);
 
 int is_revoked(unsigned char *enc_label);
 
 uint32_t join(const xmss_params *params, imt_node *head, const unsigned char *inseedU, 
             const unsigned char *inseedL, const unsigned char   *select_imt_node_seed, const unsigned char   *alloc_seed,
-            unsigned char *pub_seed_imt, unsigned char *manager_key);
+            unsigned char *pub_seed_imt, unsigned char *manager_key, uint8_t *member_status,uint32_t	*last_member, uint64_t  *request_number);
 
 
 //void request_keys(uint32_t id);

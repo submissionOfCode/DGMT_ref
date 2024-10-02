@@ -111,7 +111,7 @@ void create_m_user(uint32_t id){
 }
 
 
-void dgmt_setup(){
+void dgmt_setup(uint64_t    *request_number, uint32_t	*last_member, uint8_t	*member_status){
     struct stat st = {0};
 
     /*Create required directory*/
@@ -169,7 +169,7 @@ void dgmt_setup(){
     for(uint32_t c=INITIAL_GROUP_MEMBER;c<MAX_GROUP_MEMBER;c++)
         member_status[c] = 0;
 
-    last_member = INITIAL_GROUP_MEMBER;
+    *last_member = INITIAL_GROUP_MEMBER;
     printf("\tInitial group is created.\n");
 
     for(uint32_t c=0;c<MAX_GROUP_MEMBER;c++)
@@ -218,7 +218,7 @@ void create_smtu_keypair(const xmss_params *params, const unsigned char *inseedU
     uint32_t            k=0;
     char                filename[FILENAME_LEN+1]={0};
     char                pathname[50+FILENAME_LEN+1]={0};
-    uint32_t            smt_addr[4] = {0};
+    uint32_t            smt_addr[8] = {0};
     unsigned char       buf[32];
     uint32_t            addr[8] = {0};
     
@@ -582,7 +582,7 @@ void sign_dgmtM(const xmss_params *params, imt_node *head,
 
 void key_distribute(const xmss_params *params, imt_node *head, const unsigned char *inseedU, 
             const unsigned char *inseedL, const unsigned char   *select_imt_node_seed, const unsigned char   *alloc_seed,
-            unsigned char *pub_seed_imt, unsigned char *manager_key, uint32_t id){
+            unsigned char *pub_seed_imt, unsigned char *manager_key, uint32_t id, uint64_t  *request_number){
     
     int                 fd_smtu,fd_muser, fd_user;                    //file descriptors
     uint32_t            i0,i1,j=-1,k=-1;                              //indexing of leaf nodes
@@ -673,7 +673,7 @@ void key_distribute(const xmss_params *params, imt_node *head, const unsigned ch
 							exit(0);
 					}
 				}else{
-					count--;    // if the SMT tree is not valid, then discard ther turn
+					count--;    // if the SMT tree is not valid, then discard the turn
 				}
 			}
 			close(fd_user);
@@ -893,20 +893,20 @@ uint32_t open_dgmt(const xmss_params *params, const unsigned char *sm, unsigned 
 
 uint32_t join(const xmss_params *params, imt_node *head, const unsigned char *inseedU, 
             const unsigned char *inseedL, const unsigned char   *select_imt_node_seed, const unsigned char   *alloc_seed,
-            unsigned char *pub_seed_imt, unsigned char *manager_key){
+            unsigned char *pub_seed_imt, unsigned char *manager_key, uint8_t *member_status, uint32_t *last_member, uint64_t  *request_number){
 
-    if(last_member < (MAX_GROUP_MEMBER-1)){
-        member_status[last_member]=1;
+    if((*last_member) < (MAX_GROUP_MEMBER-1)){
+        member_status[*last_member]=1;
         
-        key_distribute(params, head, inseedU, inseedL, select_imt_node_seed, alloc_seed, pub_seed_imt, manager_key, last_member);
+        key_distribute(params, head, inseedU, inseedL, select_imt_node_seed, alloc_seed, pub_seed_imt, manager_key, *last_member,request_number);
         
-        last_member++;
+        (*last_member)++;
     }
-    return (last_member-1);
+    return ((*last_member)-1);
 }
 
 
-void revocation(uint32_t id, unsigned char *manager_key){
+void revocation(uint32_t id, unsigned char *manager_key, uint8_t *member_status){
 	int					fd_revok, fd_muser;
 	unsigned char       label[AES_BLOCK_SIZE];
 	unsigned char       enc_label[AES_BLOCK_SIZE];
