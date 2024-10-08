@@ -81,7 +81,7 @@ void create_m_user(uint32_t id){
     char    filename[FILENAME_LEN+1]={0};
     char    pathname[50+FILENAME_LEN+1]={0};
     
-    uint32_t    i0,i1,j,l;
+    uint32_t    i0,i1,l,j=0,k=0;
     uint32_t    init_smt = 0;
     uint32_t    len=sizeof(uint32_t);
     
@@ -101,7 +101,7 @@ void create_m_user(uint32_t id){
                         exit(0);
                     }
                     if(write(fd,&init_smt,len)!=len){
-                        printf("\n\tm_user initialization error: %u,%u,%u\n",i0,i1,j);
+                        printf("\n\tm_user initialization error: %u,%u,%u\n",i0,i1,k);
                         exit(0);
                     }
                 }
